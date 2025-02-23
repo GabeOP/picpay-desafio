@@ -2,14 +2,15 @@ package com.picpay.gabriel.service;
 
 import com.picpay.gabriel.exception.InvalidTypeException;
 import com.picpay.gabriel.exception.UserNotFoundException;
-import com.picpay.gabriel.model.DTO.UsuarioResponse;
+import com.picpay.gabriel.model.DTO.TransferenciaDTO;
 import com.picpay.gabriel.model.Entities.Usuario;
 import com.picpay.gabriel.repository.UsuarioRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.math.BigDecimal;
 
 @Service
 public class UsuarioService {
@@ -31,56 +32,35 @@ public class UsuarioService {
     this.modelMapper = modelMapper;
   }
 
-  public UsuarioResponse getUsuario(String key, String value) {
-    switch(key.toLowerCase()) {
-      case "email":
-        Usuario usuario1 = repository.findByEmail(value)
-                .orElseThrow(() -> new UserNotFoundException(value));
-        return modelMapper.map(usuario1, UsuarioResponse.class);
-
-      case "cpf":
-        Usuario usuario2 = repository.findByCpf(value)
-                .orElseThrow(() -> new UserNotFoundException(value));
-        return modelMapper.map(usuario2, UsuarioResponse.class);
-
-      default:
-        throw new InvalidTypeException(key);
-    }
+  public Usuario getUsuario(String key, String value) {
+    return switch (key.toLowerCase()) {
+      case "email" -> repository.findByEmail(value)
+              .orElseThrow(() -> new UserNotFoundException(value));
+      case "cpf" -> repository.findByCpf(value)
+              .orElseThrow(() -> new UserNotFoundException(value));
+      default -> throw new InvalidTypeException(key);
+    };
   }
 
-  public void transferencia(String tipoPayer, String keyPayer, String tipoPayee, String keyPayee, double valor) {
-    Optional<Usuario> payer = null;
-    Optional<Usuario> payee = null;
+  @Transactional
+  public void transferencia(TransferenciaDTO transferenciaDTO) {
 
-    if(tipoPayer.equals("email")) {
-      payer = repository.findByEmail(keyPayer);
-    } else if(tipoPayer.equals("cpf")) {
-      payer = repository.findByCpf(keyPayer);
-    } else {
-      throw new InvalidTypeException(null);
-    }
+    Usuario payer = getUsuario(transferenciaDTO.getTipoPayer(), transferenciaDTO.getPayer());
+    Usuario payee = getUsuario(transferenciaDTO.getTipoPayee(), transferenciaDTO.getPayee());
 
-    if(tipoPayee.equals("email")) {
-      payee = repository.findByEmail(keyPayee);
-    } else if(tipoPayee.equals("cpf")) {
-      payee = repository.findByCpf(keyPayee);
-    } else {
-      throw new InvalidTypeException(null);
-    }
+    authorizationService.userPosition(payer.getCargo());
+    authorizationService.userHasBalance(payer.getSaldoCarteira(), transferenciaDTO.getValor());
 
-    authorizationService.userExists(payer, payee);
-    authorizationService.userPosition(payer);
-    authorizationService.userHasBalance(payer, valor);
-    boolean auth =authorizationService.auth();
+    boolean auth = authorizationService.auth();
     if(!auth) throw new RuntimeException("Não autorizado.");
 
-    double saldoPayer = payer.get().getSaldoCarteira();
-    double saldoPayee = payee.get().getSaldoCarteira();
+    BigDecimal saldoPayer = payer.getSaldoCarteira();
+    BigDecimal saldoPayee = payee.getSaldoCarteira();
 
-    payer.get().setSaldoCarteira(saldoPayer - valor);
-    payee.get().setSaldoCarteira(saldoPayee + valor);
+    payer.setSaldoCarteira(saldoPayer.subtract(transferenciaDTO.getValor()));
+    payee.setSaldoCarteira(saldoPayee.add(transferenciaDTO.getValor()));
 
-    repository.save(payer.get());
-    repository.save(payee.get());
+    repository.save(modelMapper.map(payer, Usuario.class));
+    repository.save(modelMapper.map(payee, Usuario.class));
   }
 }

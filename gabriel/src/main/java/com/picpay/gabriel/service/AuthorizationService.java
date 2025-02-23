@@ -2,34 +2,26 @@ package com.picpay.gabriel.service;
 
 
 import com.picpay.gabriel.model.Enums.Cargo;
-import com.picpay.gabriel.model.Entities.Usuario;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Optional;
 
 @Service
 public class AuthorizationService {
 
-  public void userExists(Optional<Usuario> payer, Optional<Usuario> payee) {
-
-    if (!payer.isPresent() || !payee.isPresent()) {
-      throw new RuntimeException("Usuário não encontrado.");
-    }
-  }
-
-  public void userPosition(Optional<Usuario> payer) {
-    if(payer.get().getCargo() == Cargo.LOJISTA) {
+  public void userPosition(Cargo cargo) {
+    if(cargo == Cargo.LOJISTA) {
       throw new RuntimeException("Lojistas não podem realizar transferencias.");
     }
   }
 
-  public void userHasBalance(Optional<Usuario> payer, double valor) {
+  public void userHasBalance(BigDecimal saldoCarteira, BigDecimal valorTransferencia) {
 
-    if(payer.get().getSaldoCarteira() <= 0 || valor > payer.get().getSaldoCarteira()) {
+    if(saldoCarteira.compareTo(BigDecimal.ZERO) <= 0 || saldoCarteira.compareTo(valorTransferencia) < 0) {
       throw new RuntimeException("Saldo insuficiente");
     }
   }
@@ -47,7 +39,7 @@ public class AuthorizationService {
 
       int statusCode = response.statusCode();
       System.out.println(statusCode);
-      return statusCode == 200 ? true : false;
+      return statusCode == 200;
 
     } catch(Exception e) {
       System.out.println(e);

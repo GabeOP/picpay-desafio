@@ -1,6 +1,9 @@
 package com.picpay.gabriel.model.DTO;
 
+import com.picpay.gabriel.model.Enums.Cargo;
 import jakarta.persistence.Column;
+
+import java.math.BigDecimal;
 
 public class UsuarioResponse {
   private Long id;
@@ -9,15 +12,17 @@ public class UsuarioResponse {
   private String cpf;
   private String email;
   @Column(name = "saldo")
-  private double saldoCarteira;
+  private BigDecimal saldoCarteira;
+  private Cargo cargo;
 
   UsuarioResponse() {}
 
-  public UsuarioResponse(Long id, String nomeCompleto, String cpf, String email, double saldoCarteira) {
+  public UsuarioResponse(Long id, String nomeCompleto, String cpf, String email, Cargo cargo, BigDecimal saldoCarteira) {
     this.id = id;
     this.nomeCompleto = nomeCompleto;
     this.cpf = cpf;
     this.email = email;
+    this.cargo = cargo;
     this.saldoCarteira = saldoCarteira;
   }
 
@@ -53,11 +58,19 @@ public class UsuarioResponse {
     this.email = email;
   }
 
-  public double getSaldoCarteira() {
+  public Cargo getCargo() {
+    return cargo;
+  }
+
+  public void setCargo(Cargo cargo) {
+    this.cargo = cargo;
+  }
+
+  public BigDecimal getSaldoCarteira() {
     return saldoCarteira;
   }
 
-  public void setSaldoCarteira(double saldoCarteira) {
+  public void setSaldoCarteira(BigDecimal saldoCarteira) {
     this.saldoCarteira = saldoCarteira;
   }
 }

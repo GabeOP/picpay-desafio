@@ -1,16 +1,18 @@
 package com.picpay.gabriel.model.DTO;
 
+import java.math.BigDecimal;
+
 public class TransferenciaDTO {
   private String tipoPayee;
   private String payee;
   private String tipoPayer;
   private String payer;
-  private double valor; 
+  private BigDecimal valor;
 
   public TransferenciaDTO() {
   }
 
-  public TransferenciaDTO(String tipoPayee, String payee, String tipoPayer, String payer, double valor) {
+  public TransferenciaDTO(String tipoPayee, String payee, String tipoPayer, String payer, BigDecimal valor) {
     this.tipoPayee = tipoPayee;
     this.payee = payee;
     this.tipoPayer = tipoPayer;
@@ -50,11 +52,11 @@ public class TransferenciaDTO {
     this.payer = payer;
   }
 
-  public double getValor() {
+  public BigDecimal getValor() {
     return valor;
   }
 
-  public void setValor(double valor) {
+  public void setValor(BigDecimal valor) {
     this.valor = valor;
   }
 }

@@ -4,6 +4,8 @@ import com.picpay.gabriel.model.Enums.Cargo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
+import java.math.BigDecimal;
+
 @Entity
 public class Usuario {
 
@@ -27,11 +29,11 @@ public class Usuario {
   @NotBlank
   private String senha;
 
-  private double saldoCarteira;
+  private BigDecimal saldoCarteira;
 
   private Cargo cargo = Cargo.COMUM;
 
-  public Usuario() {}
+  public Usuario(){}
 
   public Usuario(String nomeCompleto, String cpf, String email, String senha, Cargo cargo) {
     this.nomeCompleto = nomeCompleto;
@@ -39,7 +41,7 @@ public class Usuario {
     this.email = email;
     this.senha = senha;
     this.cargo = cargo;
-    this.saldoCarteira = 0.0;
+    this.saldoCarteira = BigDecimal.valueOf(0.0);
   }
 
   public Long getId() {
@@ -82,11 +84,11 @@ public class Usuario {
     this.senha = senha;
   }
 
-  public double getSaldoCarteira() {
+  public BigDecimal getSaldoCarteira() {
     return saldoCarteira;
   }
 
-  public void setSaldoCarteira(double saldoCarteira) {
+  public void setSaldoCarteira(BigDecimal saldoCarteira) {
     this.saldoCarteira = saldoCarteira;
   }
 
